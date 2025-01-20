@@ -1,0 +1,6 @@
+①プロジェクトファイル「cstech_project」のアドレスバーに「cmd」を入力してコマンドプロンプトを起動する
+②「php artisan serve」をコマンド入力してウェブサーバーを起動する
+③サイトで「http://localhost:8000/torihikisaki」を入力してアクセスすると画面が表示される
+
+※注意※
+.envファイルと、config/database.phpのDBアクセス情報が正しく設定されていること。

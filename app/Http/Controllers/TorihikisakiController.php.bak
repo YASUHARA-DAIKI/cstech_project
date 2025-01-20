@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Torihikisaki;
+use Illuminate\Http\Request;
+
+class TorihikisakiController extends Controller
+{
+    public function index()
+    {
+        // torihiki_cdで昇順ソート
+        $torihikisaki = Torihikisaki::orderBy('torihiki_cd', 'asc')->get();
+        return view('torihikisaki.index', compact('torihikisaki'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'torihiki_cd' => 'required',
+            'client_name' => 'required',
+            'client_name_kana' => 'required',
+            'department_name' => 'required',
+            'postal_cd' => 'required',
+            'address1' => 'required',
+            'address2' => 'required',
+            'main_phone_number' => 'required',
+        ]);
+
+        Torihikisaki::create($request->all());
+        return redirect()->route('torihikisaki.index');
+    }
+
+    public function update(Request $request, $id)
+    {
+        $torihikisaki = Torihikisaki::findOrFail($id);
+        $torihikisaki->update($request->all());
+        return redirect()->route('torihikisaki.index');
+    }
+
+    public function destroy($id)
+    {
+        Torihikisaki::findOrFail($id)->delete();
+        return redirect()->route('torihikisaki.index');
+    }
+
+    public function downloadCsv()
+    {
+        $torihikisaki = Torihikisaki::all();
+        $filename = 'torihikisaki_' . date('Y-m-d') . '.csv';
+        $handle = fopen('php://output', 'w');
+        fputcsv($handle, ['torihiki_cd', 'client_name', 'client_name_kana', 'department_name', 'postal_cd', 'address1', 'address2', 'main_phone_number']);
+        foreach ($torihikisaki as $torihikisaki) {
+            fputcsv($handle, [
+                $torihikisaki->torihiki_cd,
+                $torihikisaki->client_name,
+                $torihikisaki->client_name_kana,
+                $torihikisaki->department_name,
+                $torihikisaki->postal_cd,
+                $torihikisaki->address1,
+                $torihikisaki->address2,
+                $torihikisaki->main_phone_number,
+            ]);
+        }        }
+        fclose($handle);
+
+        return response()->stream(
+            fn () => readfile('php://output'),
+            200,
+            [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]
+        );
+    }
+}
